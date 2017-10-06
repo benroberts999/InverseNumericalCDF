@@ -24,11 +24,12 @@ It uses linear extrapolation, which is almost always good enough.
 The more points that are given in the input CDF file, the more accurate the output inverse CDF will be.
 
 The CDF function must be in a plain text file, no headers or comments.
-Format should be each line has 'x' 'space' 'f(x)', e.g.
-  x_1 y_1
-  x_2 y_2
-  ...
-  x_N y_n
+Format should be each line has 'x' 'space' 'f(x)', e.g.  
+  x_1 y_1  
+  x_2 y_2  
+  ...  
+  x_N y_n  
+
 The First x (x_min) is typically 0, but not always.
 The last x is x_max, and depends on the function.
 Each proceeding y MUST be larger than previous y!
