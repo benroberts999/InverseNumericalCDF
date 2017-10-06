@@ -9,7 +9,28 @@ The reason you might want to form the inverse from the CDF numerically, is that
 it is not always possible to find the inverse analytically.
 And even in many cases where it is possible, it's often not practical!
 
-### What it does:
+By definition, a cumulative distribution function has range:
+
+  CDF(x) = [0,1]
+
+for
+
+  x = [x_min, m_max]
+
+Then define g(u) to be the inverse of CDF(x)  [solve CDF(x) = u]
+
+  g(u) = [x_min, x_max]
+
+for 
+
+  u = [0,1].
+
+**Inverse Transform Sampling Reminder:** 
+If u is drawn randomly from [0,1] (with a uniform distribution), and CDF(x) is the CDF for probability distribution P(x), then g(u) will have probability distribution P(x), where g is the inverse of CDF.
+Therefore, if we want to draw random numbers according to P(x), we just draw uniform random numbers u=[0,1], and then use g(u).
+
+
+### What the program does:
 
 This class reads in a given numerical CDF function (from a text file).
 It then forms the inverse of the CDF, by solving numerically.
@@ -44,4 +65,5 @@ The CDF is given for x: 0 -> 20, which is enough.
 
 Note: in this case, the inverse can actually be found analytically, allowing
 one to easily check the correctness:
-  10 + 3 Sqrt[2] InverseErf[ 2u - Erf[5*Sqrt[2]] ]
+
+ g(u) = 10 + 3 Sqrt(2) InverseErf( 2 * u - Erf[ 5 * Sqrt{2} ] )
