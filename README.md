@@ -2,6 +2,8 @@
 
 Class that finds the inverse of numerical CDFs (cumulative distribution function).
 
+(Can also give a flat prior between given min/max values; useful for testing).
+
 The resultant inverse CDF can then be used for inverse transform sampling
   see: https://github.com/benroberts999/inverseTransformSample
 
@@ -25,7 +27,31 @@ for
 
   u = [0,1].
 
-**Inverse Transform Sampling Reminder:** 
+
+## Usage:
+
+We have our formatted CDF function stored in text file: _testCdf.txt_
+
+Form the numeric inverse CDF etc:
+
+  * NumericCdfInverse cdf_object("testCdf.txt");
+
+The, for a _u_ value chosen between 0 and 1, draw the variables using:
+
+  * df_object.inverseCdf(u);
+
+**Flat prior alternative**
+
+  * NumericCdfInverse cdf_object(10.,20.);
+
+Will generate a flat prior, that will return a variable between 10 and 20.
+Of course, you don't need to use this class to do this. However, it might
+be useful to use this so you can swap between the real prior and a flat prior
+easily without changing the inner code.
+
+
+### Inverse Transform Sampling Reminder:
+
 If u is drawn randomly from [0,1] (with a uniform distribution), and CDF(x) is the CDF for probability distribution P(x), then g(u) will have probability distribution P(x), where g is the inverse of CDF.
 Therefore, if we want to draw random numbers according to P(x), we just draw uniform random numbers u=[0,1], and then use g(u).
 

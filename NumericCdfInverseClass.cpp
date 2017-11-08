@@ -19,6 +19,10 @@ Then, there is a single public function, inverseCdf, that outputs the value of
 the inverse CDF function for any given u=[0,1].
 It uses linear extrapolation.
 
+Note: has an option to instead take in one or two doubles.
+This will return a flat prior (useful for some testing).
+If given two doubles, will return flat prior between them.
+If given 1 input double, will use this as the maximum, and assume minimum=0.
 
 */
 
@@ -27,14 +31,7 @@ NumericCdfInverse::NumericCdfInverse(std::string input_path_to_cdf)
 /*
 The constructor.
 Takes in non-optional file, that holds numerical CDF, and forms the inverse.
-
-NOTE:
-Could make a second optional input, an N-dimentional double vector, that holds
-the coeficients of an (N-1)-dimentional polynomial.
-i.e., the 'best-fit' polynomial for any arbitrary
-NOTE: this would ONLY work, if the polynomial was guarenteed to be monotonically
-increasing... prob best not to bother.
-
+See also overloaded version below.
 */
 {
   //Store the path the the CDF file:
@@ -57,15 +54,17 @@ increasing... prob best not to bother.
 
 //******************************************************************************
 NumericCdfInverse::NumericCdfInverse(double min, double max)
-/**/
+/*
+Overloaded initialisation function.
+Will lead to a flat prior between min/max.
+Can just give 1 input, and will then go from 0 up to that number
+*/
 {
-
   xmin=min;
   xmax=max;
   inverse_cdf.push_back(xmin);
   inverse_cdf.push_back(xmax);
   N=2;
-
 }
 
 

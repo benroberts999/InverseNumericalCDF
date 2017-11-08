@@ -18,6 +18,7 @@ class NumericCdfInverse {
 
     //constructor:
     NumericCdfInverse(std::string input_path_to_cdf);
+    NumericCdfInverse(double in_min, double in_max=0);
 
     //Function to return the inverse CDF value:
     double inverseCdf(double x);
