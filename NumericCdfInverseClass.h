@@ -9,6 +9,8 @@
 #include <vector>
 
 //Class that finds the inverse of numerical CDFs.
+//Used for inverse transform sampling, when the inverse either cannot be
+// found analytically or is too complicated.
 
 class NumericCdfInverse {
 
@@ -19,6 +21,9 @@ class NumericCdfInverse {
 
     //Function to return the inverse CDF value:
     double inverseCdf(double x);
+
+    //for sanity check:
+    bool ok;
 
   private:
 
