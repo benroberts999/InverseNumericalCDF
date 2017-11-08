@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <string>
 #include <vector>
+#include <cmath>
 
 //Class that finds the inverse of numerical CDFs.
 //Used for inverse transform sampling, when the inverse either cannot be
@@ -18,7 +19,7 @@ class NumericCdfInverse {
 
     //constructor:
     NumericCdfInverse(std::string input_path_to_cdf);
-    NumericCdfInverse(double in_min, double in_max=0);
+    NumericCdfInverse(std::string type, double a, double b=0);
 
     //Function to return the inverse CDF value:
     double inverseCdf(double x);
@@ -33,6 +34,13 @@ class NumericCdfInverse {
 
     // Function that inverts the given CDF numerically
     int invertCdf();
+
+    //Functions for the "analytic" priors
+    int solidAnglePrior();
+    int flatPrior(double in_min, double in_max);
+    int gaussianPrior(double x0, double s);
+    double inverseErf(double x);
+    int logPrior(double min, double max);
 
     //Store location of CDF input file:
     std::string path_to_cdf;

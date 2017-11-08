@@ -2,7 +2,10 @@
 
 Class that finds the inverse of numerical CDFs (cumulative distribution function).
 
-(Can also give a flat prior between given min/max values; useful for testing).
+NOTE: There are also options to use a few specific analytic priors!
+These are stored numerically, so can be used like look-up tables.
+Good way to easily swap between priors without changing any code, and good when
+speed is desired over accuracy.
 
 The resultant inverse CDF can then be used for inverse transform sampling
   see: https://github.com/benroberts999/inverseTransformSample
@@ -23,7 +26,7 @@ Then define g(u) to be the inverse of CDF(x)  [solve CDF(x) = u]
 
   g(u) = [x_min, x_max]
 
-for 
+for
 
   u = [0,1].
 
@@ -36,24 +39,49 @@ Form the numeric inverse CDF etc:
 
   * NumericCdfInverse cdf_object("testCdf.txt");
 
-The, for a _u_ value chosen between 0 and 1, draw the variables using:
+Then, for a _u_ value chosen between 0 and 1, draw the variables using:
 
-  * df_object.inverseCdf(u);
+  * cdf_object.inverseCdf(u);
 
-**Flat prior alternative**
 
-  * NumericCdfInverse cdf_object(10.,20.);
+**Approximate analytic prior alternative**
 
-Will generate a flat prior, that will return a variable between 10 and 20.
-Of course, you don't need to use this class to do this. However, it might
+  * NumericCdfInverse cdf_object("flat",10.,20.);
+  * NumericCdfInverse cdf_object("flat",200);
+
+First: Will generate a flat prior, that will return a variable between 10 and 20.
+Second: between 0 and 200.
+(Of course, you don't need to use this Class to do this. However, it might
 be useful to use this so you can swap between the real prior and a flat prior
-easily without changing the inner code.
+easily without changing the inner code.)
+
+
+  * NumericCdfInverse cdf_object("SolidAngle");
+
+This is for the "theta" (0 to Pi, z=cos(theta)) angle. Prior is the solid angle,
+sin(theta).
+
+
+  * NumericCdfInverse cdf_object("Gaussian",0,1);
+
+Generate a Gaussian prior with mean 0 and standard deviation 1.
+Only goes +/- 4 sigma.. and extrapolates linearly - so if high accuracy is needed
+for the tail of the Gaussian distribution, this is NOT the way to go.
+
+
+  * NumericCdfInverse cdf_object("log",10,1000);
+
+A logarithmic prior (Jefferies prior), between 10 and 1000.
+Inputs and outputs are positive definite.
 
 
 ### Inverse Transform Sampling Reminder:
 
-If u is drawn randomly from [0,1] (with a uniform distribution), and CDF(x) is the CDF for probability distribution P(x), then g(u) will have probability distribution P(x), where g is the inverse of CDF.
-Therefore, if we want to draw random numbers according to P(x), we just draw uniform random numbers u=[0,1], and then use g(u).
+If u is drawn randomly from [0,1] (with a uniform distribution),
+and CDF(x) is the CDF for probability distribution P(x), then g(u) will have
+probability distribution P(x), where g is the inverse of CDF.
+Therefore, if we want to draw random numbers according to P(x), we just draw
+uniform random numbers u=[0,1], and then use g(u).
 
 
 ### What the program does:

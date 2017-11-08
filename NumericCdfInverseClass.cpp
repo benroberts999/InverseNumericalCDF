@@ -19,11 +19,14 @@ Then, there is a single public function, inverseCdf, that outputs the value of
 the inverse CDF function for any given u=[0,1].
 It uses linear extrapolation.
 
-Note: has an option to instead take in one or two doubles.
-This will return a flat prior (useful for some testing).
-If given two doubles, will return flat prior between them.
-If given 1 input double, will use this as the maximum, and assume minimum=0.
-
+Note: also has the option to do (approximate) analytic priors.
+All must be called with a string, and then following doubles (depending).
+For now, four options:
+  - Flat        : min, max (or, just max, assumes min=0)
+  - SolidAngle  : takes no other arguments
+  - Gaussian    : min, max
+  - Log         : min, max
+Note: these are all approximate. Still uses linear extrapolation between points.
 */
 
 //******************************************************************************
@@ -34,6 +37,13 @@ Takes in non-optional file, that holds numerical CDF, and forms the inverse.
 See also overloaded version below.
 */
 {
+
+  //For the analytic "solid angle" (sin(theta)) prior
+  if(input_path_to_cdf=="SolidAngle"){
+    solidAnglePrior();
+    return;
+  }
+
   //Store the path the the CDF file:
   path_to_cdf = input_path_to_cdf;
   //sanity check:
@@ -50,24 +60,124 @@ See also overloaded version below.
   }
 }
 
-
-
 //******************************************************************************
-NumericCdfInverse::NumericCdfInverse(double min, double max)
+NumericCdfInverse::NumericCdfInverse(std::string type, double a, double b)
 /*
 Overloaded initialisation function.
+For (approximate) analytic priors.
+Does Gaussian, and logarithmic priors.
+*/
+{
+
+  //"solid angle" ALSO done above
+  if(type=="SolidAngle"){
+    solidAnglePrior();
+  }
+  else if(type=="Gaussian"){
+    gaussianPrior(a,b);
+  }
+  else if(type=="log"||type=="Log"){
+    logPrior(a,b);
+  }
+  else if(type=="flat"||type=="Flat"){
+    flatPrior(a,b);
+  }
+
+}
+
+//******************************************************************************
+int NumericCdfInverse::flatPrior(double min, double max)
+/*
 Will lead to a flat prior between min/max.
 Can just give 1 input, and will then go from 0 up to that number
 */
 {
-  xmin=min;
-  xmax=max;
+  if(max>min){
+    xmin=min;
+    xmax=max;
+  }else{
+    xmin=max;
+    xmax=min;
+  }
   inverse_cdf.push_back(xmin);
   inverse_cdf.push_back(xmax);
   N=2;
 }
 
+//******************************************************************************
+int NumericCdfInverse::gaussianPrior(double x0, double s)
+/*
+Approximate Gaussian prior.
+NOTE: not very accurate for very low/very high values for u..
+but OK in most cases!
+Only goes out to 4 sigma.
+*/
+{
+  N=257; //must be an odd number!
+  xmin=x0-4*s;
+  xmax=x0+4*s;
+  inverse_cdf.push_back(xmin);
+  for(int i=1; i<N-1; i++){
+    double u = double(i)/double(N-1);
+    double g = x0 + s*sqrt(2)*inverseErf(2.*u-1.);
+    inverse_cdf.push_back(g);
+  }
+  inverse_cdf.push_back(xmax);
+  return 0;
+}
+//*-----------------------------------------------------------------------------
+double NumericCdfInverse::inverseErf(double x)
+/*
+Approximate inverse Error function.
+Note very accurate (~e-3).. but good enough for us here.
+Needed for Gaussian prior.
+*/
+{
+  int sgn=1;
+  if(x<0)sgn=-1;
+  double lnx=log(1.-x*x);
+  double tt1=4.33+0.5*lnx;
+  double tt2=6.803*lnx;
+  return sgn*sqrt(sqrt(tt1*tt1-tt2)-tt1);
+}
 
+//******************************************************************************
+int NumericCdfInverse::logPrior(double min, double max)
+/*
+Approximate log prior.
+Note: still uses linear extrapolation between points..
+good enough for most purposes though
+*/
+{
+  N=256;
+  xmin=fabs(min); //negative numbers not allowed
+  xmax=fabs(max);
+  for(int i=0; i<N; i++){
+    double u = double(i)/double(N-1);
+    double g = xmin*pow((xmax/xmin),u);
+    inverse_cdf.push_back(g);
+  }
+  return 0;
+}
+
+//******************************************************************************
+int NumericCdfInverse::solidAnglePrior()
+/*
+Approximate prior for the solid angle for the 'theta' angle
+[z = cos(theta), theta: 0 -> Pi]
+The prior is sin(theta)
+*/
+{
+  N=128; //don't need many points.
+  xmin=0;
+  xmax=M_PI;
+  for(int i=1; i<=N; i++){
+    double u = double(i)/double(N);
+    double g = acos(1. - 2.*u);
+    inverse_cdf.push_back(g);
+  }
+  return 0;
+}
 
 //******************************************************************************
 int NumericCdfInverse::readNumericCdf()
@@ -84,10 +194,8 @@ The First x (x_min) is typically 0, but not always.
 The last x is x_max, and depends on the function.
 The first y should always be 0, and the last y should always be 1.
 Note: Each proceeding y MUST be larger than previous y!
-
 */
 {
-
   //Open the input file that containts the CDF:
   std::ifstream cdf_file;
   cdf_file.open (path_to_cdf.c_str());
@@ -131,7 +239,6 @@ for u = [0,1]
 Uses a linear extrapolation.
 */
 {
-
   double ixm = 0;  // x_minus (integer index for cdf array)
   //nb: x_minus = ixm * dx + xmin
 
